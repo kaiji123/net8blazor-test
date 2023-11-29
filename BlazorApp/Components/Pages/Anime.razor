@@ -1,0 +1,73 @@
+@page "/anime"
+@attribute [StreamRendering]
+
+<PageTitle>Anime</PageTitle>
+
+<h1>Animes</h1>
+
+<p>This component demonstrates showing data.</p>
+
+@if (animeData == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+   <table class="table">
+        <thead>
+            <tr>
+                <th>Mal ID</th>
+                <th>Title</th>
+                <th>Image</th>
+                <!-- Add other columns as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var anime in animeData.RootElement.GetProperty("data").EnumerateArray())
+            {
+                <tr>
+                    <td>@anime.GetProperty("mal_id").GetInt32()</td>
+                    <td>@anime.GetProperty("title").GetString()</td>
+                    <td><img src="@anime.GetProperty("images").GetProperty("jpg").GetProperty("image_url").GetString()" alt="Anime Image" width="100" /></td>
+                    <!-- Access and display other properties dynamically -->
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private AnimeList[]? animes;
+    private string jsonResponse;
+    private System.Text.Json.JsonDocument animeData;
+    static readonly HttpClient httpClient = new HttpClient();
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate asynchronous loading to demonstrate streaming rendering
+        @* jsonResponse = await client.GetFromJsonAsync<AnimeList[]>("https://api.jikan.moe/v4/seasons/now"); *@
+
+        try
+        {
+            // Fetch JSON data as string
+            jsonResponse = await httpClient.GetStringAsync("https://api.jikan.moe/v4/seasons/now");
+            animeData = System.Text.Json.JsonDocument.Parse(jsonResponse);
+            Console.WriteLine(animeData);
+        }
+        catch (Exception ex)
+        {
+            jsonResponse = $"Error: {ex.Message}";
+        }
+        
+        
+    }
+
+    private class AnimeList
+    {
+    
+        public int mal_id { get; set; }
+ 
+    }
+}
+
+
